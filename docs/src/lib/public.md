@@ -16,8 +16,16 @@ Pages = ["public.md"]
 
 ## API
 
+### Types and Constructors
+
 ```@docs
+Configuration
 Parameter
 PowerOfTwo
+```
+
+### Methods
+
+```@docs
 perturb
 ```

@@ -1,12 +1,12 @@
 module NODAL
 
+using Test
 using DocStringExtensions
+using JuliaDB
 
 export Parameter, Configuration, PowerOfTwo, perturb
 
-include("parameter.jl")
 include("configuration.jl")
-include("custom_types.jl")
-include("perturb.jl")
+include("database.jl")
 
 end
