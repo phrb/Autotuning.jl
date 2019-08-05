@@ -22,6 +22,7 @@ Pages = ["public.md"]
 Configuration
 Parameter
 PowerOfTwo
+Measurement
 ```
 
 ### Methods

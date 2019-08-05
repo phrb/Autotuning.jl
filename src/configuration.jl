@@ -17,27 +17,26 @@ $(TYPEDEF)
 $(TYPEDFIELDS)
 """
 struct Configuration
-    parameters::Dict{String, Parameter}
+    parameters::Dict{Symbol, Parameter}
 end
 
+convert(::Type{NamedTuple}, c::Configuration) = NamedTuple{Tuple(collect(keys(c.parameters)))}(collect(v.current_value for v in values(c.parameters)))
 
 """
 $(TYPEDEF)
 
-Primitive type to store powers of two. Conversion to `Int64` computes the actual
-power.
+Primitive type using `Integer`.
 """
 primitive type PowerOfTwo <: Integer 64 end
 
 """
 $(TYPEDSIGNATURES)
 
-Creates a  `PowerOfTwo` instance using  an `Int64`. Exponentiation  is performed
-when converting back to `Int64`.
+Creates a  `PowerOfTwo` instance using  an `Int64`.
 """
-PowerOfTwo(x::Int64) = reinterpret(PowerOfTwo, x)
+PowerOfTwo(x::Int64) = reinterpret(PowerOfTwo, 2 ^ x)
 
-Int64(x::PowerOfTwo) = 2 ^ reinterpret(Int64, x)
+Int64(x::PowerOfTwo) = reinterpret(Int64, x)
 
 Base.show(io::IO, x::PowerOfTwo) = print(io, Int64(x))
 
