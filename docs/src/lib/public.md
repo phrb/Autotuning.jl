@@ -29,4 +29,6 @@ Measurement
 
 ```@docs
 perturb
+table
+push!
 ```

@@ -1,57 +1,27 @@
 """
-$(TYPEDEF)
+$(TYPEDSIGNATURES)
 
-$(TYPEDFIELDS)
-
-An alias of `NamedTuple`.
+Creates an `IndexedTable` using a [`Configuration`](@ref).
 """
-const Measurement = NamedTuple{
-                                 (
-                                     :measured, :cost, :technique, :date
-                                 ),
-                                 Tuple{
-                                     Bool, Float64, String, DateTime
-                                 }
-                             }
-
-function configuration_table(configuration::Configuration,
-                             measurement::Measurement)
+function table(configuration::Configuration)
     table((; NamedTuple{
-        Tuple(
-            collect(
-                keys(
-                    configuration.parameters
-                )
-            )
-        )
+        Tuple(collect(keys(configuration.parameters)))
     }(
-        collect(
-            [v.current_value] for v in values(configuration.parameters)
-        )
+        collect([v.current_value] for v in values(configuration.parameters))
     )...,
            NamedTuple{
-               Tuple(
-                   keys(measurement)
-               )
+               Tuple(keys(configuration.measurement))
            }(
-               [[v] for v in values(measurement)]
-           )...
-           )
-          )
+               [[v] for v in values(configuration.measurement)]
+           )...))
 end
 
-function configuration_table(configuration::Configuration)
-    configuration_table(configuration,
-                        (
-                            measured = false,
-                            cost = NaN,
-                            technique = "initialization",
-                            date = now(),
-                        ))
-end
+"""
+$(TYPEDSIGNATURES)
 
-function push_measurement(target_table::IndexedTable,
-                          configuration::Configuration,
-                          measurement::Measurement)
-    append!(rows(target_table), rows(configuration_table(configuration, measurement)))
+Pushes a new [`Configuration`](@ref) to an `IndexedTable`.
+"""
+function push!(target_table::IndexedTable,
+               configuration::Configuration)
+    push!(rows(target_table), convert(NamedTuple, configuration))
 end

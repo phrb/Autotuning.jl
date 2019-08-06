@@ -5,10 +5,10 @@ using Dates
 using DocStringExtensions
 using JuliaDB
 
-import Base.convert
+import Base.convert, JuliaDB.table, JuliaDB.push!
 
 export Parameter, Configuration, PowerOfTwo, Measurement,
-    perturb, configuration_table, convert, push_measurement
+    perturb, table, convert, push!
 
 include("configuration.jl")
 include("database.jl")

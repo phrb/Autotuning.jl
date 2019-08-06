@@ -14,13 +14,38 @@ end
 """
 $(TYPEDEF)
 
+An alias of `NamedTuple`.
+
 $(TYPEDFIELDS)
 """
-struct Configuration
-    parameters::Dict{Symbol, Parameter}
+const Measurement = NamedTuple{
+    (:measured, :cost, :technique, :date),
+    Tuple{Bool, Float64, String, DateTime}
+}
+
+Measurement() = (
+    measured = false,
+    cost = NaN,
+    technique = "initialization",
+    date = now()
+)
+
+"""
+$(TYPEDEF)
+
+Stores [`Parameter`](@ref) and [`Measurement`](@ref). Represents the association
+of specific performance parameters with performance measurements.
+
+$(TYPEDFIELDS)
+"""
+struct Configuration{T <: Parameter}
+    parameters::Dict{Symbol, T}
+    measurement::Measurement
 end
 
-convert(::Type{NamedTuple}, c::Configuration) = NamedTuple{Tuple(collect(keys(c.parameters)))}(collect(v.current_value for v in values(c.parameters)))
+Configuration(parameters::Dict{Symbol, T}) where T <: Parameter = Configuration(parameters, Measurement())
+
+convert(::Type{NamedTuple}, c::Configuration) = NamedTuple{Tuple(vcat([k for k in keys(c.parameters)], [m for m in keys(c.measurement)]))}(vcat([k.current_value for k in values(c.parameters)], [m for m in values(c.measurement)]))
 
 """
 $(TYPEDEF)
@@ -64,11 +89,11 @@ end
 
 """
 $(TYPEDSIGNATURES)
+
+Perturbs  parameters with  discrete values  by choosing  indexes in  an interval
+centered at the index of the current value.
 """
-function perturb(p::Union{Parameter{PowerOfTwo},
-                          Parameter{Int64},
-                          Parameter{String}
-                          },
+function perturb(p::Union{Parameter{PowerOfTwo}, Parameter{Int64}, Parameter{String}},
                  magnitude::Float64)
     current_index::Int64 = findfirst(x -> x == p.current_value, p.values)
     radius::Int64 = round(Int64, magnitude * size(p.values, 1))
