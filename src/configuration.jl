@@ -103,3 +103,20 @@ function perturb(p::Union{Parameter{PowerOfTwo}, Parameter{Int64}, Parameter{Str
 
               p.values)
 end
+
+"""
+$(TYPEDSIGNATURES)
+
+Perturbs  a  [`Configuration`](@ref)  by   calling  [`perturb`](@ref)  for  each
+[`Parameter`](@ref) with the intensities specified in `magnitude`.
+
+"""
+function perturb(configuration::Configuration, magnitude::Dict{Symbol, Float64})
+    parameters = Dict{Symbol, Parameter}()
+
+    for (k, v) in configuration.parameters
+        parameters[k] = perturb(v, magnitude[k])
+    end
+
+    return Configuration(parameters)
+end
