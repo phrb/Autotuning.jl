@@ -19,38 +19,44 @@ An alias of `NamedTuple`.
 $(TYPEDFIELDS)
 """
 const Measurement = NamedTuple{
-    (:measured, :cost, :technique, :date),
-    Tuple{Bool, Float64, String, DateTime}
+    (:measured, :cost, :technique, :date_requested, :date_measured),
+    Tuple{Bool, Float64, String, DateTime, DateTime}
 }
 
 Measurement() = (
     measured = false,
     cost = NaN,
     technique = "initialization",
-    date = now()
+    date_requested = now(),
+    date_measured = now()
 )
 
 """
 $(TYPEDEF)
 
-Stores [`Parameter`](@ref) and [`Measurement`](@ref). Represents the association
-of specific performance parameters with performance measurements.
+Stores   a  [`Parameter`](@ref)   `NamedTuple`   and  a   [`Measurement`](@ref).
+Represents the  association of specific performance  parameters with performance
+measurements.
 
 $(TYPEDFIELDS)
 """
-struct Configuration{T <: Parameter}
-    parameters::Dict{Symbol, T}
+struct Configuration
+    parameters::NamedTuple
     measurement::Measurement
 end
 
-Configuration(parameters::Dict{Symbol, T}) where T <: Parameter = Configuration(parameters, Measurement())
+Configuration(parameters::NamedTuple) = Configuration(parameters, Measurement())
 
-convert(::Type{NamedTuple}, c::Configuration) = NamedTuple{Tuple(vcat([k for k in keys(c.parameters)], [m for m in keys(c.measurement)]))}(vcat([k.current_value for k in values(c.parameters)], [m for m in values(c.measurement)]))
+convert(::Type{NamedTuple}, c::Configuration) = NamedTuple{Tuple(
+    vcat([k for k in keys(c.parameters)],
+         [m for m in keys(c.measurement)]))}(
+             vcat([k.current_value for k in values(c.parameters)],
+                  [m for m in values(c.measurement)]))
 
 """
 $(TYPEDEF)
 
-Primitive type using `Integer`.
+Primitive type, `Integer` wrapper.
 """
 primitive type PowerOfTwo <: Integer 64 end
 
@@ -69,54 +75,37 @@ Base.show(io::IO, x::PowerOfTwo) = print(io, Int64(x))
 $(TYPEDSIGNATURES)
 
 Receives a [`Parameter`](@ref) `p` and  returns a new [`Parameter`](@ref) with a
-new `current_value`.   The new value  is chosen  uniformly at random  within the
-valid range of `values` of `p`, on an interval with radius `magnitude`, centered
-at the `current_value` of `p`.
+new `current_value`.   The new value  is chosen from a `Distribution`.
 
-The argument `magnitude` is a `Float64`  between `0.0` and `1.0` that represents
-how  much `p`  will  be  perturbed, proportionally  to  its  valid interval.  No
-perturbation  is achieved  with  `magnitude =  0.0`, and  `magnitude  = 1.0`  is
-equivalent to a uniform random sample within the valid range of `values` of `p`.
+The  caller must  create the  appropriate  distribution to  control valid  value
+ranges and perturbation magnitude. For `Float64` parameters, `distribution` must
+be a valid continuous distribution or a `MixtureModel`.
 """
-function perturb(p::Parameter{Float64}, magnitude::Float64)
-    radius::Float64 = abs(magnitude * (p.values[2] - p.values[1]))
-    Parameter(rand() *
-              (min(p.values[2], p.current_value + radius) -
-               max(p.values[1], p.current_value - radius)) +
-              max(p.values[1], p.current_value - radius),
-              p.values)
+function perturb(p::Parameter{Float64}, distribution::Distribution)
+    return Parameter(rand(distribution), p.values)
 end
 
 """
 $(TYPEDSIGNATURES)
 
-Perturbs  parameters with  discrete values  by choosing  indexes in  an interval
-centered at the index of the current value.
+Perturbing  categorical  ou discrete  numerical  parameters  must be  done  with
+`Distributions.Categorical` distributions.
 """
 function perturb(p::Union{Parameter{PowerOfTwo}, Parameter{Int64}, Parameter{String}},
-                 magnitude::Float64)
-    current_index::Int64 = findfirst(x -> x == p.current_value, p.values)
-    radius::Int64 = round(Int64, magnitude * size(p.values, 1))
-
-    Parameter(rand(p.values[max(1, current_index - radius):min(size(p.values, 1),
-                                                               current_index + radius)]),
-
-              p.values)
+                 distribution::Distribution)
+    return Parameter(p.values[rand(distribution)], p.values)
 end
 
 """
 $(TYPEDSIGNATURES)
 
-Perturbs  a  [`Configuration`](@ref)  by   calling  [`perturb`](@ref)  for  each
-[`Parameter`](@ref) with the intensities specified in `magnitude`.
+Perturbs a [`Configuration`](@ref) by calling  [`perturb`](@ref) for each of its
+[`Parameter`](@ref)  with  the  distributions   specified  in  the  `NamedTuple`
+`distributions`.
 
 """
-function perturb(configuration::Configuration, magnitude::Dict{Symbol, Float64})
-    parameters = Dict{Symbol, Parameter}()
-
-    for (k, v) in configuration.parameters
-        parameters[k] = perturb(v, magnitude[k])
-    end
-
-    return Configuration(parameters)
+function perturb(configuration::Configuration, distribution::NamedTuple)
+    return Configuration(typeof(configuration.parameters)(
+        k = perturb(v, distribution[k])
+        for (k, v) in pairs(configuration.parameters)))
 end

@@ -49,3 +49,6 @@ flycheck_*.el
 
 # Julia Manifest.toml
 Manifest.toml
+
+# Julia history
+.juliahistory

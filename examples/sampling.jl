@@ -1,17 +1,21 @@
-using NODAL, CSV, JuliaDB
+using NODAL, CSV, JuliaDB, Distributions
 
 function sample_x_y(samples::Int,
-                    magnitude_x::Float64,
-                    magnitude_y::Float64)
-    configuration = Configuration(Dict(:x => Parameter(0.5, [0.0, 1.0]),
-                                       :y => Parameter(0.5, [0.0, 1.0])))
+                    distribution_x::Distribution,
+                    distribution_y::Distribution)
+
+    configuration = Configuration((x = Parameter(0.5, [0.0, 1.0]),
+                                   y = Parameter(0.5, [0.0, 1.0])))
+
+    distribution = (x = distribution_x,
+                    y = distribution_y)
+
+    configuration = perturb(configuration, distribution)
 
     sampled_data = table(configuration)
-    magnitude = Dict(:x => magnitude_x,
-                     :y => magnitude_y)
 
     for i = 2:samples
-        configuration = perturb(configuration, magnitude)
+        configuration = perturb(configuration, distribution)
         push!(sampled_data, configuration)
     end
 
@@ -19,33 +23,62 @@ function sample_x_y(samples::Int,
 end
 
 function sample()
-    samples = 10
-    magnitudes = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
+    samples = 1000
+    distributions = [
+        (
+            x = Truncated(Normal(0.5, 0.08), 0.0, 1.0),
+            y = Truncated(Normal(0.5, 0.08), 0.0, 1.0),
+            name = "mu:0.5,sig:0.08"
+        ),
+        (
+            x = Truncated(Normal(0.5, 0.13), 0.0, 1.0),
+            y = Truncated(Normal(0.5, 0.13), 0.0, 1.0),
+            name = "mu:0.5,sig:0.13"
+        ),
+        (
+            x = Truncated(Normal(0.1, 0.08), 0.0, 1.0),
+            y = Truncated(Normal(0.5, 0.13), 0.0, 1.0),
+            name = "mu:(0.1,0.5),sig:(0.08,0.13)"
+        ),
+        (
+            x = MixtureModel(
+                [
+                    Truncated(Normal(0.0, 0.08), 0.0, 0.4),
+                    Truncated(Normal(1.0, 0.08), 0.6, 1.0)
+                ]
+            ),
+            y = MixtureModel(
+                [
+                    Truncated(Normal(0.0, 0.08), 0.0, 0.4),
+                    Truncated(Normal(1.0, 0.08), 0.6, 1.0)
+                ]
+            ),
+            name = "mu:(0.0,1.0)*2,sig:(0.08)*2"
+        )
+    ]
 
-    sampled_data = sample_x_y(samples, magnitudes[1], magnitudes[1])
+    sampled_data = sample_x_y(samples, distributions[1][:x], distributions[1][:y])
     sampled_data = pushcol(sampled_data,
-                           (:mag_x => repeat([magnitudes[1]], samples),
-                            :mag_y => repeat([magnitudes[1]], samples)))
+                           (:name => repeat([distributions[1][:name]], samples)))
 
-    for magnitude in magnitudes[2:end]
-        new_data = sample_x_y(samples, magnitude, magnitude)
+    for distribution in distributions[2:end]
+        new_data = sample_x_y(samples, distribution[:x], distribution[:y])
         new_data = pushcol(new_data,
-                           (:mag_x => repeat([magnitude], samples),
-                            :mag_y => repeat([magnitude], samples)))
+                           (:name => repeat([distribution[:name]], samples)))
 
         append!(rows(sampled_data), rows(new_data))
     end
 
-    new_data = sample_x_y(samples, magnitudes[1], magnitudes[end])
+    new_data = sample_x_y(samples, distributions[1][:x], distributions[end][:y])
     new_data = pushcol(new_data,
-                       (:mag_x => repeat([magnitudes[2]], samples),
-                        :mag_y => repeat([magnitudes[end]], samples)))
+                       (:name => repeat([distributions[1][:name] * "x"], samples)))
+
     append!(rows(sampled_data), rows(new_data))
 
-    new_data = sample_x_y(samples, magnitudes[end], magnitudes[1])
+    new_data = sample_x_y(samples, distributions[end][:x], distributions[1][:y])
     new_data = pushcol(new_data,
-                       (:mag_x => repeat([magnitudes[end]], samples),
-                        :mag_y => repeat([magnitudes[2]], samples)))
+                       (:name => repeat([distributions[end][:name] * "x"], samples)))
+
     append!(rows(sampled_data), rows(new_data))
 
     CSV.write("sampled_data.csv", sampled_data)

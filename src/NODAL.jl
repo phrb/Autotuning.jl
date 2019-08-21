@@ -4,6 +4,8 @@ using Test
 using Dates
 using DocStringExtensions
 using JuliaDB
+using Random
+using Distributions
 
 import Base.convert, JuliaDB.table, JuliaDB.push!
 
