@@ -3,14 +3,15 @@ module NODAL
 using Test
 using Dates
 using DocStringExtensions
-using JuliaDB
+using DataFrames
 using Random
 using Distributions
 
-import Base.convert, JuliaDB.table, JuliaDB.push!
+import Base: getproperty, getindex, keys, values, pairs, push!
 
-export Parameter, Configuration, PowerOfTwo, Measurement,
-    perturb, table, convert, push!
+export Configuration, Parameter, PowerOfTwo, Measurement,
+    perturb, configuration_table, getproperty, getindex,
+    keys, values, pairs, push!
 
 include("configuration.jl")
 include("database.jl")

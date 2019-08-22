@@ -1,4 +1,4 @@
-using NODAL, CSV, JuliaDB, Distributions
+using NODAL, CSV, DataFrames, Distributions
 
 function sample_x_y(samples::Int,
                     distribution_x::Distribution,
@@ -12,7 +12,7 @@ function sample_x_y(samples::Int,
 
     configuration = perturb(configuration, distribution)
 
-    sampled_data = table(configuration)
+    sampled_data = configuration_table(configuration)
 
     for i = 2:samples
         configuration = perturb(configuration, distribution)
@@ -58,28 +58,24 @@ function sample()
     ]
 
     sampled_data = sample_x_y(samples, distributions[1][:x], distributions[1][:y])
-    sampled_data = pushcol(sampled_data,
-                           (:name => repeat([distributions[1][:name]], samples)))
+    sampled_data.name = repeat([distributions[1][:name]], samples)
 
     for distribution in distributions[2:end]
         new_data = sample_x_y(samples, distribution[:x], distribution[:y])
-        new_data = pushcol(new_data,
-                           (:name => repeat([distribution[:name]], samples)))
+        new_data.name = repeat([distribution[:name]], samples)
 
-        append!(rows(sampled_data), rows(new_data))
+        append!(sampled_data, new_data)
     end
 
     new_data = sample_x_y(samples, distributions[1][:x], distributions[end][:y])
-    new_data = pushcol(new_data,
-                       (:name => repeat([distributions[1][:name] * "x"], samples)))
+    new_data.name = repeat([distributions[1][:name] * "x"], samples)
 
-    append!(rows(sampled_data), rows(new_data))
+    append!(sampled_data, new_data)
 
     new_data = sample_x_y(samples, distributions[end][:x], distributions[1][:y])
-    new_data = pushcol(new_data,
-                       (:name => repeat([distributions[end][:name] * "x"], samples)))
+    new_data.name = repeat([distributions[end][:name] * "x"], samples)
 
-    append!(rows(sampled_data), rows(new_data))
+    append!(sampled_data, new_data)
 
     CSV.write("sampled_data.csv", sampled_data)
 end

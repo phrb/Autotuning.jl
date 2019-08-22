@@ -52,3 +52,6 @@ Manifest.toml
 
 # Julia history
 .juliahistory
+
+# Generated Data from Examples
+*.csv
