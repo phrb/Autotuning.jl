@@ -1,8 +1,7 @@
 """
 $(TYPEDEF)
 
-An  alias  of  `NamedTuple`,  stores   information  on  requested  and  measured
-[`Configuration`](@ref).
+Stores information on requested and measured [`Configuration`](@ref)s.
 
 $(TYPEDFIELDS)
 """
@@ -34,7 +33,8 @@ Measurement() = (
 """
 $(TYPEDSIGNATURES)
 
-Pushes a new [`Configuration`](@ref) to a `DataFrame`.
+Pushes a new [`Configuration`](@ref) to a `DataFrame`, appending an
+empty [`Measurement`](@ref).
 """
 function push!(target_table::DataFrame, c::Configuration)
     push!(
@@ -51,7 +51,8 @@ end
 """
 $(TYPEDSIGNATURES)
 
-Creates a `DataFrame` using a [`Configuration`](@ref).
+Creates   an    empty   `DataFrame`   with    column   types   from    a   given
+[`Configuration`](@ref) and from an empty [`Measurement`](@ref).
 """
 function configuration_table(c::Configuration)
     push!(

@@ -29,6 +29,6 @@ Measurement
 
 ```@docs
 perturb
-table
+configuration_table
 push!
 ```
