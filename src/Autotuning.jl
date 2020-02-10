@@ -1,4 +1,4 @@
-module NODAL
+module Autotuning
 
 using Test
 using Dates

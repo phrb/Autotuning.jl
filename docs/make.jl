@@ -1,5 +1,5 @@
 using Documenter
-using NODAL
+using Autotuning
 
 # The DOCSARGS environment variable can be used to pass additional arguments to make.jl.
 # This is useful on CI, if you need to change the behavior of the build slightly but you
@@ -12,8 +12,8 @@ end
 
 makedocs(
     format = Documenter.HTML(prettyurls = !("local" in ARGS)),
-    modules = [NODAL],
-    sitename = "NODAL.jl",
+    modules = [Autotuning],
+    sitename = "Autotuning.jl",
     authors = "Pedro Bruel and contributors.",
     linkcheck = !("skiplinks" in ARGS),
     strict = !("strict=false" in ARGS),

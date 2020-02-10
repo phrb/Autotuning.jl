@@ -1,4 +1,4 @@
-name = "NODAL"
+name = "Autotuning"
 uuid = "8f0fe810-b0d6-11e9-06ad-b7533f3d7c4c"
 authors = ["Pedro Bruel <pedro.bruel@gmail.com>"]
 version = "0.1.0"

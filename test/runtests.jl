@@ -1,4 +1,4 @@
 using Test
 
-@testset "NODAL" begin
+@testset "Autotuning.jl" begin
 end

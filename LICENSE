@@ -1,6 +1,6 @@
 MIT License
 
-NODAL: NODAL is an Open Distributed Autotuning Library
+Autotuning.jl: An autotuning library in Julia
 Copyright (C) 2019 Pedro Bruel <pedro.bruel@gmail.com>
 
 Permission is hereby granted, free of charge,  to any person obtaining a copy of

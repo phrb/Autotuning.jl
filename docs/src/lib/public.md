@@ -1,6 +1,6 @@
 # API Documentation
 
-Documentation for `NODAL.jl`'s API.
+Documentation for `Autotuning.jl`'s API.
 
 ## Contents
 

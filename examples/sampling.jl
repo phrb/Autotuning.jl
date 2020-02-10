@@ -1,4 +1,4 @@
-using NODAL, CSV, DataFrames, Distributions
+using Autotuning, CSV, DataFrames, Distributions
 
 function sample_x_y(samples::Int,
                     distribution_x::Distribution,
